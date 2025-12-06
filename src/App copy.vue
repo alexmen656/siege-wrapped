@@ -22,22 +22,30 @@ const response = ref(null)
   console.log(res.data)
 })*/
 
-fetch("http://localhost:3031/api/siege/user/U0877PG14F4", {
-  "method": "GET",
+fetch("https://siege.hackclub.com/api/public-beta/user/U0877PG14F4", {
   "headers": {
-    "accept": "application/json",
-  }
-}).then(res => {
-  console.log("Status:", res.status);
-  if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-  return res.json();
-})
-  .then(data => {
-    console.log("Response data:", data)
-    response.value = data;
-  })
-  .catch(err => {
-    console.error("Error fetching user data:", err)
+    "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+    "accept-language": "de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7",
+    "cache-control": "max-age=0",
+    "if-none-match": "W/\"f23ac2ba630641ec942120da55ee216a\"",
+    "priority": "u=0, i",
+    "sec-ch-ua": "\"Chromium\";v=\"142\", \"Google Chrome\";v=\"142\", \"Not_A Brand\";v=\"99\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"macOS\"",
+    "sec-fetch-dest": "document",
+    "sec-fetch-mode": "navigate",
+    "sec-fetch-site": "none",
+    "sec-fetch-user": "?1",
+    "upgrade-insecure-requests": "1"
+  },
+  "body": null,
+  "method": "GET",
+  "mode": "cors",
+  "credentials": "include"
+}).then(response => response.json())
+  .then(response => {
+    console.log(response)
+    response.value = response.data;
   })
 
 
@@ -58,7 +66,9 @@ curl 'https://siege.hackclub.com/api/public-beta/user/U0877PG14F4' \
 -H 'sec - fetch - user: ?1' \
 -H 'upgrade - insecure - requests: 1' \
 -H 'user - agent: Mozilla / 5.0(Macintosh; Intel Mac OS X 10_15_7) AppleWebKit / 537.36(KHTML, like Gecko) Chrome / 142.0.0.0 Safari / 537.36'
+
 */
+
 </script>
 
 <template>
