@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import EnterSlackID from './components/EnterSlackID.vue'
 
 interface Project {
@@ -30,6 +30,58 @@ const hasStarted = ref(false)
 const countdownTime = ref('00:00:00')
 let countdownInterval: ReturnType<typeof setInterval> | null = null
 
+const displayedHours = ref(0)
+const displayedCoins = ref(0)
+const displayedLevel = ref(0)
+const displayedProjects = ref(0)
+
+const animateNumber = (target: number, current: number, setter: (val: number) => void, duration: number = 1500) => {
+  const start = current
+  const difference = target - start
+  const startTime = Date.now()
+
+  const step = () => {
+    const elapsed = Date.now() - startTime
+    const progress = Math.min(elapsed / duration, 1)
+    const easeOutQuart = 1 - Math.pow(1 - progress, 4)
+
+    const currentValue = Math.round(start + (difference * easeOutQuart))
+    setter(currentValue)
+
+    if (progress < 1) {
+      requestAnimationFrame(step)
+    }
+  }
+
+  requestAnimationFrame(step)
+}
+
+watch(currentStory, (newStory) => {
+  if (!userData.value) return
+
+  const story = stories.value[newStory]
+  if (!story) return
+
+  switch (story.type) {
+    case 'hours':
+      animateNumber(Math.round(userData.value.total_hours), displayedHours.value, (val) => displayedHours.value = val)
+      break
+    case 'coins':
+      const totalCoins = (userData.value.projects || [])
+        .reduce((sum, p) => sum + parseFloat(p.coin_value), 0)
+      animateNumber(Math.round(totalCoins), displayedCoins.value, (val) => displayedCoins.value = val)
+      break
+    case 'level':
+      animateNumber(userData.value.level, displayedLevel.value, (val) => displayedLevel.value = val)
+      break
+    case 'stats':
+      animateNumber(userData.value.projects?.length || 0, displayedProjects.value, (val) => displayedProjects.value = val)
+      animateNumber(Math.round(userData.value.total_hours), displayedHours.value, (val) => displayedHours.value = val)
+      animateNumber(userData.value.level, displayedLevel.value, (val) => displayedLevel.value = val)
+      break
+  }
+})
+
 interface StorySlide {
   title: string
   subtitle: string
@@ -37,6 +89,7 @@ interface StorySlide {
   type: string
   detail?: string
   projectData?: Project
+  animatedNumber?: boolean
 }
 
 const stories = computed<StorySlide[]>(() => {
@@ -53,53 +106,56 @@ const stories = computed<StorySlide[]>(() => {
 
   const slides: StorySlide[] = [
     {
-      title: '🎊 Siege Wrapped 2025',
+      title: '⚔️ Siege Wrapped 2025',
       subtitle: `Your journey at Siege`,
-      gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      gradient: '',
       type: 'intro'
     },
     {
       title: `⏰ ${countdownTime.value}`,
       subtitle: 'Until Siege ends',
       detail: 'Make every moment count!',
-      gradient: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)',
+      gradient: '',
       type: 'countdown'
     },
     {
       title: userData.value.username || 'Maker',
       subtitle: yearsSince > 0
-        ? `Member since ${new Date(userData.value.created_at).getFullYear()} • ${yearsSince} year${yearsSince > 1 ? 's' : ''} of building`
+        ? `Member since ${new Date(userData.value.created_at).getFullYear()} • ${yearsSince > 1 ? `${yearsSince} years` : '1 year'} of building`
         : `Joined ${new Date(userData.value.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`,
-      gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+      gradient: '',
       type: 'user'
     },
     {
       title: '📊 Your Stats',
       subtitle: `${totalProjects} project${totalProjects !== 1 ? 's' : ''} • ${Math.round(userData.value.total_hours)}h total • Level ${userData.value.level}`,
       detail: `${Math.round(totalCoins)} coins earned`,
-      gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-      type: 'stats'
+      gradient: '',
+      type: 'stats',
+      animatedNumber: true
     },
     {
       title: `${Math.round(userData.value.total_hours)}h`,
       subtitle: 'Time spent building',
       detail: `That's ${Math.round(avgHoursPerProject)}h per project on average`,
-      gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-      type: 'hours'
+      gradient: '',
+      type: 'hours',
+      animatedNumber: true
     },
     {
       title: `🎖️ Level ${userData.value.level}`,
       subtitle: 'Your current level',
       detail: 'Keep building to level up!',
-      gradient: 'linear-gradient(135deg, #FA8BFF 0%, #2BD2FF 50%, #2BFF88 100%)',
-      type: 'level'
+      gradient: '',
+      type: 'level',
+      animatedNumber: true
     },
     {
       title: '🏆 Your Top Projects',
       subtitle: topProjects.length > 0
         ? `You've built ${totalProjects} project${totalProjects !== 1 ? 's' : ''}, here are your best`
         : 'Start building to see your projects here',
-      gradient: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
+      gradient: '',
       type: 'projects-intro'
     }
   ]
@@ -110,11 +166,7 @@ const stories = computed<StorySlide[]>(() => {
       title: `${medals[index]} ${project.name}`,
       subtitle: project.description || 'An amazing project',
       detail: `${project.coin_value} coins${project.hours ? ` • ${project.hours}h` : ''}`,
-      gradient: index === 0
-        ? 'linear-gradient(135deg, #f6d365 0%, #fda085 100%)'
-        : index === 1
-          ? 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)'
-          : 'linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%)',
+      gradient: '',
       type: 'project',
       projectData: project
     })
@@ -125,14 +177,15 @@ const stories = computed<StorySlide[]>(() => {
       title: `💰 ${Math.round(totalCoins)} Coins`,
       subtitle: 'Total earned this semester',
       detail: 'Your hard work is paying off!',
-      gradient: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
-      type: 'coins'
+      gradient: '',
+      type: 'coins',
+      animatedNumber: true
     },
     {
-      title: '🎉 Thank You!',
+      title: '⚔️ Thank You!',
       subtitle: 'Keep building amazing things',
       detail: 'See you in the next YSWS',
-      gradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+      gradient: '',
       type: 'outro'
     }
   )
@@ -225,13 +278,13 @@ onUnmounted(() => {
 <template>
   <div class="wrapped-container">
     <EnterSlackID v-if="!hasStarted" @submit="handleSlackIdSubmit" />
-    <div v-else-if="isLoading" class="story-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
+    <div v-else-if="isLoading" class="story-card">
       <div class="story-content">
         <div class="loading-spinner"></div>
         <h1 class="story-title">Loading your Stats...</h1>
       </div>
     </div>
-    <div v-else-if="error" class="story-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">
+    <div v-else-if="error" class="story-card">
       <div class="story-content">
         <h1 class="story-title">Oops!</h1>
         <p class="story-subtitle">{{ error }}</p>
@@ -245,10 +298,23 @@ onUnmounted(() => {
           <div class="progress-fill"></div>
         </div>
       </div>
-      <div class="story-card" :style="{ background: stories[currentStory]?.gradient }">
+      <div class="story-card">
         <div class="story-content" :class="'slide-type-' + stories[currentStory]?.type">
-          <h1 class="story-title" :key="currentStory">{{ stories[currentStory]?.title }}</h1>
-          <p class="story-subtitle" :key="currentStory + '-sub'" v-html="stories[currentStory]?.subtitle"></p>
+          <h1 class="story-title" :key="currentStory">
+            <span v-if="stories[currentStory]?.type === 'hours'" class="animated-number">{{ displayedHours }}h</span>
+            <span v-else-if="stories[currentStory]?.type === 'level'" class="animated-number">🎖️ Level {{
+              displayedLevel }}</span>
+            <span v-else-if="stories[currentStory]?.type === 'coins'" class="animated-number">💰 {{ displayedCoins }}
+              Coins</span>
+            <span v-else>{{ stories[currentStory]?.title }}</span>
+          </h1>
+          <p class="story-subtitle" :key="currentStory + '-sub'">
+            <span v-if="stories[currentStory]?.type === 'stats'">
+              {{ displayedProjects }} project{{ displayedProjects !== 1 ? 's' : '' }} • {{ displayedHours }}h total •
+              Level {{ displayedLevel }}
+            </span>
+            <span v-else v-html="stories[currentStory]?.subtitle"></span>
+          </p>
           <p v-if="stories[currentStory]?.detail" class="story-detail" :key="currentStory + '-detail'">
             {{ stories[currentStory]?.detail }}
           </p>
@@ -279,7 +345,7 @@ onUnmounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #000;
+  background: #f5f5f4 url('https://siege.hackclub.com/assets/parchment-texture-e4dc566e.jpg') repeat;
   overflow: hidden;
 }
 
@@ -304,7 +370,7 @@ onUnmounted(() => {
 .progress-bar {
   flex: 1;
   height: 3px;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(64, 43, 32, 0.3);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -312,14 +378,14 @@ onUnmounted(() => {
 .progress-bar.active .progress-fill {
   width: 100%;
   height: 100%;
-  background: white;
+  background: rgba(64, 43, 32, 0.75);
   animation: progress 5s linear;
 }
 
 .progress-bar.completed .progress-fill {
   width: 100%;
   height: 100%;
-  background: white;
+  background: rgba(64, 43, 32, 0.75);
 }
 
 @keyframes progress {
@@ -340,6 +406,8 @@ onUnmounted(() => {
   overflow: hidden;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   animation: fadeIn 0.4s ease-out;
+  border: 4px solid rgba(64, 43, 32, 0.3);
+  background: #f5f5f4 url('https://siege.hackclub.com/assets/parchment-texture-e4dc566e.jpg') repeat !important;
 }
 
 @keyframes fadeIn {
@@ -360,7 +428,7 @@ onUnmounted(() => {
   left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
-  color: white;
+  color: rgba(64, 43, 32, 0.9);
   padding: 40px;
   width: 100%;
 }
@@ -372,23 +440,32 @@ onUnmounted(() => {
   line-height: 1.1;
   letter-spacing: -0.02em;
   animation: slideUp 0.6s ease-out;
-  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.15);
+  font-family: "IM Fell English", serif;
+}
+
+.animated-number {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+  transition: transform 0.3s ease;
 }
 
 .story-subtitle {
   font-size: 1.8rem;
   font-weight: 600;
   margin: 20px 0 0;
-  opacity: 0.95;
+  opacity: 0.85;
   animation: slideUp 0.6s ease-out 0.1s backwards;
+  font-family: "IM Fell English", serif;
 }
 
 .story-detail {
   font-size: 1.3rem;
   font-weight: 500;
   margin: 15px 0 0;
-  opacity: 0.85;
+  opacity: 0.75;
   animation: slideUp 0.6s ease-out 0.2s backwards;
+  font-family: "IM Fell English", serif;
 }
 
 .project-links {
@@ -404,33 +481,61 @@ onUnmounted(() => {
   padding: 12px 24px;
   font-size: 1rem;
   font-weight: 600;
-  border: 2px solid white;
-  border-radius: 25px;
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
+  border: 3px solid rgba(64, 43, 32, 0.75);
+  border-radius: 0;
+  background: transparent;
+  color: rgb(59, 42, 26);
   text-decoration: none;
   cursor: pointer;
   transition: all 0.3s;
-  backdrop-filter: blur(10px);
+  font-family: "IM Fell English", serif;
+  position: relative;
+}
+
+.project-link::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border-radius: inherit;
+  border: 3px solid rgba(64, 43, 32, 0.55);
+  pointer-events: none;
+  transition: inset 0.2s ease-in-out;
 }
 
 .project-link:hover {
-  background: white;
-  color: #667eea;
+  background: rgba(64, 43, 32, 0.1);
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.project-link:hover::after {
+  inset: 2px;
 }
 
 .slide-type-intro .story-title {
   font-size: 4.5rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
 }
 
 .slide-type-countdown .story-title {
   font-size: 5rem;
   font-family: 'Courier New', monospace;
   font-weight: 700;
+  color: rgb(238, 90, 36);
 }
 
 .slide-type-project .story-subtitle {
@@ -448,8 +553,58 @@ onUnmounted(() => {
   font-size: 5.5rem;
 }
 
+.slide-type-coins .story-title {
+  color: rgb(212, 175, 55);
+  animation: bounce 1s ease-in-out;
+}
+
+@keyframes bounce {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
 .slide-type-outro .story-title {
   font-size: 4.5rem;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.story-card::before {
+  content: "⚔️";
+  position: absolute;
+  top: 80px;
+  left: 30px;
+  font-size: 2rem;
+  opacity: 0.15;
+  animation: float 3s ease-in-out infinite;
+}
+
+.story-card::after {
+  content: "⚔️";
+  position: absolute;
+  top: 80px;
+  right: 30px;
+  font-size: 2rem;
+  opacity: 0.15;
+  animation: float 3s ease-in-out infinite 1.5s;
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 .back-btn {
@@ -457,17 +612,32 @@ onUnmounted(() => {
   padding: 12px 28px;
   font-size: 1rem;
   font-weight: 600;
-  border: 2px solid white;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
+  border: 3px solid rgba(64, 43, 32, 0.75);
+  border-radius: 0;
+  background: transparent;
+  color: rgb(59, 42, 26);
   cursor: pointer;
   transition: all 0.3s;
+  font-family: "IM Fell English", serif;
+  position: relative;
+}
+
+.back-btn::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border: 3px solid rgba(64, 43, 32, 0.55);
+  pointer-events: none;
+  transition: inset 0.2s ease-in-out;
 }
 
 .back-btn:hover {
-  background: white;
-  color: #f093fb;
+  background: rgba(64, 43, 32, 0.1);
+  transform: translateY(-2px);
+}
+
+.back-btn:hover::after {
+  inset: 2px;
 }
 
 @keyframes slideUp {
@@ -509,17 +679,18 @@ onUnmounted(() => {
   bottom: 30px;
   left: 50%;
   transform: translateX(-50%);
-  color: white;
+  color: rgba(64, 43, 32, 0.7);
   font-size: 14px;
   font-weight: 600;
-  opacity: 0.7;
+  opacity: 0.8;
+  font-family: "IM Fell English", serif;
 }
 
 .loading-spinner {
   width: 50px;
   height: 50px;
-  border: 4px solid rgba(255, 255, 255, 0.3);
-  border-top-color: white;
+  border: 4px solid rgba(64, 43, 32, 0.3);
+  border-top-color: rgba(64, 43, 32, 0.75);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 30px;
