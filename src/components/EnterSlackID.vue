@@ -55,15 +55,13 @@ const validateAndSubmit = async () => {
   <div class="start-screen">
     <div class="container">
       <div class="logo-section">
-        <h1 class="logo">⚔️ SIEGE WRAPPED</h1>
+        <h1 class="logo"><!--⚔️ -->SIEGE WRAPPED</h1>
       </div>
       <div class="content-section">
-        <h2 class="title">Your 2025 Siege Stats Await</h2>
-        <p class="subtitle">Enter your Slack ID to see your year in review</p>
         <fieldset class="fieldset">
-          <legend class="fieldset-legend">Project Name</legend>
+          <legend class="fieldset-legend">Enter your Slack ID to see your year in review</legend>
           <div class="underline-field">
-            <input v-model="slackId" placeholder="e.g., U0788PG14F5" required="required" class="text-input validator"
+            <input v-model="slackId" placeholder="e.g., U0788PG14F5" required="true" class="text-input validator"
               :disabled="isLoading" type="text">
           </div>
         </fieldset>
@@ -73,12 +71,12 @@ const validateAndSubmit = async () => {
           Error: {{ error }}
         </div>
         <div class="info-section">
-          <p class="info-text">Your Slack ID starts with "U" followed by numbers and letters</p>
+          <p class="info-text">You can get your Slack ID in #what-is-my-slack-id</p>
+          <!--<p class="info-text">Your Slack ID starts with "U" followed by numbers and letters</p>-->
         </div>
       </div>
       <div class="footer">
-        <h3>Important!!! This is not a official Siege site</h3>
-        <p>Made with ❤️ for Siege</p>
+        <h3>Important: This is not a official Siege site!</h3>
       </div>
     </div>
   </div>
@@ -122,7 +120,7 @@ const validateAndSubmit = async () => {
 
 .container {
   width: 100%;
-  max-width: 500px;
+  max-width: 550px;
   padding: 40px;
   display: flex;
   flex-direction: column;
@@ -141,7 +139,7 @@ const validateAndSubmit = async () => {
   font-weight: 900;
   margin: 0;
   letter-spacing: -0.02em;
-  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  /*text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); */
 }
 
 .content-section {
@@ -376,10 +374,11 @@ fieldset {
   align-items: baseline;
   gap: 0.5rem;
   color: #3b2a1a;
+  width: 100%;
 }
 
 .fieldset-legend {
-  font-size: 0.875rem;
+  font-size: 1rem;
   margin-bottom: 0.375rem;
 }
 
