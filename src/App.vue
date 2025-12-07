@@ -15,13 +15,20 @@ const isLoading = ref(true)
 const error = ref(null)
 const slackId = ref<string | null>(null)
 const hasStarted = ref(false)
+const countdownTime = ref('00:00:00')
+let countdownInterval: ReturnType<typeof setInterval> | null = null
 
 const stories = computed(() => {
   if (!userData.value) return []
 
   return [
     {
-      title: '2024 Siege Wrapped',
+      title: 'Siege Wrapped',
+      subtitle: `Siege is over in ${countdownTime.value}`,
+      gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+    },
+    {
+      title: 'Siege Wrapped',
       subtitle: 'Your journey at Siege',
       gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
     },
@@ -65,6 +72,30 @@ const handleKeydown = (e: KeyboardEvent) => {
   if (e.key === 'ArrowLeft') prevStory()
 }
 
+const startCountdown = () => {
+  const endTime = new Date('2025-12-08T00:00:00-05:00');
+
+  const updateCountdown = () => {
+    const now = new Date()
+    const timeRemaining = endTime.getTime() - now.getTime()
+
+    if (timeRemaining <= 0) {
+      countdownTime.value = '00:00:00'
+      if (countdownInterval) clearInterval(countdownInterval)
+      return
+    }
+
+    const hours = Math.floor((timeRemaining / (1000 * 60 * 60)) % 24)
+    const minutes = Math.floor((timeRemaining / (1000 * 60)) % 60)
+    const seconds = Math.floor((timeRemaining / 1000) % 60)
+
+    countdownTime.value = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+  }
+
+  updateCountdown()
+  countdownInterval = setInterval(updateCountdown, 1000)
+}
+
 const handleSlackIdSubmit = (id: string) => {
   slackId.value = id
   hasStarted.value = true
@@ -74,6 +105,7 @@ const handleSlackIdSubmit = (id: string) => {
 }
 
 const fetchUserData = (id: string) => {
+  startCountdown()
   fetch(`http://localhost:3031/api/siege/user/${id}`, {
     method: 'GET',
     headers: {
@@ -101,6 +133,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown)
+  if (countdownInterval) clearInterval(countdownInterval)
 })
 </script>
 
