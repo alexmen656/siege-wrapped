@@ -29,6 +29,7 @@ const slackId = ref<string | null>(null)
 const hasStarted = ref(false)
 const countdownTime = ref('00:00:00')
 let countdownInterval: ReturnType<typeof setInterval> | null = null
+const audioRef = ref<HTMLAudioElement | null>(null)
 
 const displayedHours = ref(0)
 const displayedCoins = ref(0)
@@ -234,11 +235,20 @@ const startCountdown = () => {
   countdownInterval = setInterval(updateCountdown, 1000)
 }
 
+const playLoopingAudio = () => {
+  audioRef.value = new Audio('https://summer.hackclub.com/assets/wrapped-d6e3523c.mp3')
+  audioRef.value.loop = true
+  audioRef.value.play().catch(err => {
+    console.error('Error playing audio:', err)
+  })
+}
+
 const handleSlackIdSubmit = (id: string) => {
   slackId.value = id
   hasStarted.value = true
   isLoading.value = true
   error.value = null
+  playLoopingAudio()
   fetchUserData(id)
 }
 
@@ -272,6 +282,10 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown)
   if (countdownInterval) clearInterval(countdownInterval)
+  if (audioRef.value) {
+    audioRef.value.pause()
+    audioRef.value = null
+  }
 })
 </script>
 
@@ -345,7 +359,9 @@ onUnmounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #f5f5f4 url('https://siege.hackclub.com/assets/parchment-texture-e4dc566e.jpg') repeat;
+  background-image: linear-gradient(#00000090, #00000090), url('https://siege.hackclub.com/assets/parchment-texture-e4dc566e.jpg');
+  background-position: 50%;
+  background-size: cover;
   overflow: hidden;
 }
 
@@ -516,19 +532,6 @@ onUnmounted(() => {
   font-size: 4.5rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-
-  0%,
-  100% {
-    transform: scale(1);
-  }
-
-  50% {
-    transform: scale(1.05);
-  }
 }
 
 .slide-type-countdown .story-title {
