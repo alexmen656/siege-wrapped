@@ -266,7 +266,6 @@ onUnmounted(() => {
   align-items: center;
   background: #000;
   overflow: hidden;
-  font-family: 'Circular', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .stories-wrapper {

@@ -85,8 +85,8 @@ const handleKeydown = (e: KeyboardEvent) => {
         <fieldset class="fieldset">
           <legend class="fieldset-legend">Project Name</legend>
           <div class="underline-field">
-            <input placeholder="Frobnicator" required="required" class="text-input validator" type="text"
-              value="Reelmia" name="project[name]" id="project_name">
+            <input placeholder="Frobnicator" required="required" class="text-input validator" type="text" value=""
+              name="slack[id]" id="slack_id">
           </div>
         </fieldset>
         <h3>Important!!! This is not a official Siege site</h3>
@@ -104,7 +104,6 @@ const handleKeydown = (e: KeyboardEvent) => {
   display: flex;
   justify-content: center;
   align-items: center;
-  font-family: 'Circular', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   overflow: hidden;
 }
 
@@ -363,6 +362,7 @@ fieldset {
   display: inline-flex;
   align-items: baseline;
   gap: 0.5rem;
+  color: #3b2a1a;
 }
 
 .fieldset-legend {
