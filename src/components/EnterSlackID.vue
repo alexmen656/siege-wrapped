@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { createSourceFile } from 'typescript';
 import { ref } from 'vue'
 
 const emit = defineEmits<{
@@ -66,13 +67,22 @@ const handleKeydown = (e: KeyboardEvent) => {
       <div class="content-section">
         <h2 class="title">Your 2025 Siege Stats Await</h2>
         <p class="subtitle">Enter your Slack ID to see your year in review</p>
+        <fieldset class="fieldset">
+          <legend class="fieldset-legend">Project Name</legend>
+          <div class="underline-field">
+            <input placeholder="Frobnicator" required="required" class="text-input validator" type="text" value=""
+              name="slack[id]" id="slack_id">
+          </div>
+        </fieldset>
+        <a class="submit-button" @click="validateAndSubmit" :disabled="isLoading">{{ isLoading ? 'Loading...' : `Get
+          your Wrapped` }}</a>
+        <!-- <button @click="validateAndSubmit" :disabled="isLoading" class="submit-btn">
+          {{ isLoading ? 'Loading...' : 'Get your Wrapped' }}
+        </button>
         <div class="input-wrapper">
           <input v-model="slackId" type="text" placeholder="e.g., U0788PG14F5" class="slack-input" :disabled="isLoading"
             @keydown="handleKeydown" />
-          <button @click="validateAndSubmit" :disabled="isLoading" class="submit-btn">
-            {{ isLoading ? 'Loading...' : 'View My Stats' }}
-          </button>
-        </div>
+        </div>-->
         <div v-if="error" class="error-message">
           Error: {{ error }}
         </div>
@@ -82,13 +92,9 @@ const handleKeydown = (e: KeyboardEvent) => {
       </div>
       <div class="footer">
         <!--test-->
-        <fieldset class="fieldset">
-          <legend class="fieldset-legend">Project Name</legend>
-          <div class="underline-field">
-            <input placeholder="Frobnicator" required="required" class="text-input validator" type="text" value=""
-              name="slack[id]" id="slack_id">
-          </div>
-        </fieldset>
+
+        <a class="submit-button" href="/armory/explore">Explore Projects</a>
+
         <h3>Important!!! This is not a official Siege site</h3>
         <p>Made with ❤️ for Siege</p>
       </div>
@@ -97,6 +103,32 @@ const handleKeydown = (e: KeyboardEvent) => {
 </template>
 
 <style scoped>
+.submit-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "IM Fell English", serif;
+  font-size: 1.125rem;
+  padding: 0.75rem 1.25rem;
+  position: relative;
+  border: 3px solid rgba(64, 43, 32, 0.75);
+  color: rgb(59, 42, 26);
+  background: transparent;
+  /*color: inherit;*/
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.submit-button::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border-radius: inherit;
+  border: 3px solid rgba(64, 43, 32, 0.55);
+  pointer-events: none;
+  transition: inset 0.2s ease-in-out;
+}
+
 .start-screen {
   width: 100vw;
   height: 100vh;
@@ -391,14 +423,4 @@ legend {
   appearance: none;
   -webkit-appearance: none;
 }
-
-/*input[type="text" i] {
-  padding-block: 1px;
-  padding-inline: 2px;
-}
-
-.input {
-  position: relative;
-  text-align: center;
-}/*/
 </style>
