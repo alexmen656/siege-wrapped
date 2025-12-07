@@ -25,26 +25,26 @@ app.get('/api/siege/user/:userId', async (req, res) => {
 
         const data = await response.json();
 
-        const projectFetches = data.projects.map(async (project) => {
-            const r = await fetch(`https://siege.hackclub.com/api/public-beta/project/${project.id}`, {
-                method: 'GET',
-                headers: { 'accept': 'application/json' },
-                redirect: 'follow'
-            });
+        data.projects.forEach(async (project, index) => {
+            const response2 = await fetch(
+                `https://siege.hackclub.com/api/public-beta/project/${project.id}`,
+                {
+                    method: 'GET',
+                    headers: {
+                        'accept': 'application/json',
+                        'accept-language': 'de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7',
+                    },
+                    credentials: 'include',
+                    redirect: 'follow'
+                }
+            );
 
-            if (!r.ok) {
-                console.warn(`Project ${project.id} fetch failed: ${r.status}`);
-                return { ...project, detailsError: `HTTP ${r.status}` };
-            }
-
-            const projectData = await r.json();
-            // return projectData;
-            //return { ...project, details: projectData };
-            return { ...projectData };
+            const projectData = await response2.json();
+            console.log('Fetched project data:', projectData);
+            //project.details = projectData;
+            //data.projects[index].details = projectData;
+            data.projects[index] = projectData;
         });
-
-        const projectsWithDetails = await Promise.all(projectFetches);
-        data.projects = projectsWithDetails;
 
         res.json(data);
     } catch (error) {
