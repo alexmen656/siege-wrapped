@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { createSourceFile } from 'typescript';
 import { ref } from 'vue'
 
 const emit = defineEmits<{
@@ -76,13 +75,6 @@ const handleKeydown = (e: KeyboardEvent) => {
         </fieldset>
         <a class="submit-button" @click="validateAndSubmit" :disabled="isLoading">{{ isLoading ? 'Loading...' : `Get
           your Wrapped` }}</a>
-        <!-- <button @click="validateAndSubmit" :disabled="isLoading" class="submit-btn">
-          {{ isLoading ? 'Loading...' : 'Get your Wrapped' }}
-        </button>
-        <div class="input-wrapper">
-          <input v-model="slackId" type="text" placeholder="e.g., U0788PG14F5" class="slack-input" :disabled="isLoading"
-            @keydown="handleKeydown" />
-        </div>-->
         <div v-if="error" class="error-message">
           Error: {{ error }}
         </div>
@@ -91,10 +83,6 @@ const handleKeydown = (e: KeyboardEvent) => {
         </div>
       </div>
       <div class="footer">
-        <!--test-->
-
-        <a class="submit-button" href="/armory/explore">Explore Projects</a>
-
         <h3>Important!!! This is not a official Siege site</h3>
         <p>Made with ❤️ for Siege</p>
       </div>
@@ -114,7 +102,6 @@ const handleKeydown = (e: KeyboardEvent) => {
   border: 3px solid rgba(64, 43, 32, 0.75);
   color: rgb(59, 42, 26);
   background: transparent;
-  /*color: inherit;*/
   cursor: pointer;
   text-decoration: none;
 }
@@ -407,7 +394,6 @@ legend {
   unicode-bidi: isolate;
   padding-inline: 2px;
 }
-
 
 .text-input,
 .textarea-input,
