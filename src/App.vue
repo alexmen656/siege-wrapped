@@ -5,6 +5,12 @@ import EnterSlackID from './components/EnterSlackID.vue'
 interface Project {
   name: string
   coin_value: string
+  description?: string
+  demo_url?: string
+  repo_url?: string
+  hours?: number
+  created_at?: string
+  week_badge_text?: string
 }
 
 interface UserData {
@@ -24,117 +30,114 @@ const hasStarted = ref(false)
 const countdownTime = ref('00:00:00')
 let countdownInterval: ReturnType<typeof setInterval> | null = null
 
-const stories = computed(() => {
+interface StorySlide {
+  title: string
+  subtitle: string
+  gradient: string
+  type: string
+  detail?: string
+  projectData?: Project
+}
+
+const stories = computed<StorySlide[]>(() => {
   if (!userData.value) return []
 
-  return [
-    /*
-    coin_value
-: 
-"49.0"
-created_at
-: 
-"2025-11-15T20:24:47.569-05:00"
-demo_url
-: 
-"https://github.com/alexmen656/better-stocard/releases/tag/v1.0.0"
-description
-: 
-"Pocketz is a simple card manager that transforms your physical cards into digital ones. Additionally, it supports Apple Wallet so you can have all your cards in one place"
-hours
-: 
-10.1
-id
-: 
-1911
-is_update
-: 
-false
-name
-: 
-"Pocketz"
-repo_url
-: 
-"https://github.com/alexmen656/better-stocard/"
-status
-: 
-"finished"
-updated_at
-: 
-"2025-11-26T23:20:56.533-05:00"
-user
-: 
-{id: 75, name: "Alex P.", display_name: "Alex"}
-week_badge_text
-: 
-"Week 11"
+  const sortedProjects = (userData.value?.projects || [])
+    .sort((a, b) => parseFloat(b.coin_value) - parseFloat(a.coin_value))
 
-*/
+  const topProjects = sortedProjects.slice(0, 3)
+  const totalProjects = userData.value.projects?.length || 0
+  const totalCoins = sortedProjects.reduce((sum, p) => sum + parseFloat(p.coin_value), 0)
+  const avgHoursPerProject = userData.value.total_hours / Math.max(totalProjects, 1)
+  const yearsSince = new Date().getFullYear() - new Date(userData.value.created_at).getFullYear()
 
+  const slides: StorySlide[] = [
     {
-      title: 'Here are your top projects!',
-      subtitle: (() => {
-        const topProjects = (userData.value?.projects || [])
-          .sort((a, b) => parseFloat(b.coin_value) - parseFloat(a.coin_value))
-          .slice(0, 3)
-
-        return topProjects
-          .map((p, i) => `${i + 1}. ${p.name} (${p.coin_value})<br/>`)
-          .join('\n')
-      })(),
-      gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+      title: '🎊 Siege Wrapped 2025',
+      subtitle: `Your journey at Siege`,
+      gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      type: 'intro'
     },
     {
-      title: 'But let\'s get through them 1 by 1!',
-      gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+      title: `⏰ ${countdownTime.value}`,
+      subtitle: 'Until Siege ends',
+      detail: 'Make every moment count!',
+      gradient: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)',
+      type: 'countdown'
     },
     {
-      title: (() => {
-        const topProject = (userData.value?.projects || [])
-          .sort((a, b) => parseFloat(b.coin_value) - parseFloat(a.coin_value))[0]
-
-        return `${topProject.name}`//(${topProject.coin_value})
-      })(),
-      subtitle: (() => {
-        const topProject = (userData.value?.projects || [])
-          .sort((a, b) => parseFloat(b.coin_value) - parseFloat(a.coin_value))[0]
-
-        //return `<img src="${topProject.}" alt="Project Screenshot"/><br/><p>${topProject.description}</p>`
-        return `${topProject.description}`
-      })(),
-      gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+      title: userData.value.username || 'Maker',
+      subtitle: yearsSince > 0
+        ? `Member since ${new Date(userData.value.created_at).getFullYear()} • ${yearsSince} year${yearsSince > 1 ? 's' : ''} of building`
+        : `Joined ${new Date(userData.value.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`,
+      gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+      type: 'user'
     },
     {
-      title: 'Siege Wrapped',
-      subtitle: `Siege is over in ${countdownTime.value}`,
-      gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+      title: '📊 Your Stats',
+      subtitle: `${totalProjects} project${totalProjects !== 1 ? 's' : ''} • ${Math.round(userData.value.total_hours)}h total • Level ${userData.value.level}`,
+      detail: `${Math.round(totalCoins)} coins earned`,
+      gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+      type: 'stats'
     },
     {
-      title: 'Siege Wrapped',
-      subtitle: 'Your journey at Siege',
-      gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+      title: `${Math.round(userData.value.total_hours)}h`,
+      subtitle: 'Time spent building',
+      detail: `That's ${Math.round(avgHoursPerProject)}h per project on average`,
+      gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+      type: 'hours'
     },
     {
-      title: userData.value.username || 'User',
-      subtitle: `You have been with us since ${new Date(userData.value.created_at).getFullYear()}`,
-      gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'
-    },
-    {
-      title: `${userData.value.total_hours || 0}h`,
-      subtitle: 'Total Sessions',
-      gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
-    },
-    {
-      title: `Level ${userData.value.level || 1}`,
+      title: `🎖️ Level ${userData.value.level}`,
       subtitle: 'Your current level',
-      gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)'
+      detail: 'Keep building to level up!',
+      gradient: 'linear-gradient(135deg, #FA8BFF 0%, #2BD2FF 50%, #2BFF88 100%)',
+      type: 'level'
     },
     {
-      title: 'Thank you!',
-      subtitle: 'See you in another YSWS 🎉',
-      gradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)'
+      title: '🏆 Your Top Projects',
+      subtitle: topProjects.length > 0
+        ? `You've built ${totalProjects} project${totalProjects !== 1 ? 's' : ''}, here are your best`
+        : 'Start building to see your projects here',
+      gradient: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
+      type: 'projects-intro'
     }
   ]
+
+  topProjects.forEach((project, index) => {
+    const medals = ['🥇', '🥈', '🥉']
+    slides.push({
+      title: `${medals[index]} ${project.name}`,
+      subtitle: project.description || 'An amazing project',
+      detail: `${project.coin_value} coins${project.hours ? ` • ${project.hours}h` : ''}`,
+      gradient: index === 0
+        ? 'linear-gradient(135deg, #f6d365 0%, #fda085 100%)'
+        : index === 1
+          ? 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)'
+          : 'linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%)',
+      type: 'project',
+      projectData: project
+    })
+  })
+
+  slides.push(
+    {
+      title: `💰 ${Math.round(totalCoins)} Coins`,
+      subtitle: 'Total earned this semester',
+      detail: 'Your hard work is paying off!',
+      gradient: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
+      type: 'coins'
+    },
+    {
+      title: '🎉 Thank You!',
+      subtitle: 'Keep building amazing things',
+      detail: 'See you in the next YSWS',
+      gradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+      type: 'outro'
+    }
+  )
+
+  return slides
 })
 
 const nextStory = () => {
@@ -243,9 +246,21 @@ onUnmounted(() => {
         </div>
       </div>
       <div class="story-card" :style="{ background: stories[currentStory]?.gradient }">
-        <div class="story-content">
+        <div class="story-content" :class="'slide-type-' + stories[currentStory]?.type">
           <h1 class="story-title" :key="currentStory">{{ stories[currentStory]?.title }}</h1>
           <p class="story-subtitle" :key="currentStory + '-sub'" v-html="stories[currentStory]?.subtitle"></p>
+          <p v-if="stories[currentStory]?.detail" class="story-detail" :key="currentStory + '-detail'">
+            {{ stories[currentStory]?.detail }}
+          </p>
+          <div v-if="stories[currentStory]?.projectData?.demo_url" class="project-links">
+            <a :href="stories[currentStory]?.projectData?.demo_url" target="_blank" class="project-link">
+              🔗 View Demo
+            </a>
+            <a v-if="stories[currentStory]?.projectData?.repo_url" :href="stories[currentStory]?.projectData?.repo_url"
+              target="_blank" class="project-link">
+              💻 Repository
+            </a>
+          </div>
         </div>
         <div class="nav-area nav-left" @click="prevStory"></div>
         <div class="nav-area nav-right" @click="nextStory"></div>
@@ -368,6 +383,75 @@ onUnmounted(() => {
   animation: slideUp 0.6s ease-out 0.1s backwards;
 }
 
+.story-detail {
+  font-size: 1.3rem;
+  font-weight: 500;
+  margin: 15px 0 0;
+  opacity: 0.85;
+  animation: slideUp 0.6s ease-out 0.2s backwards;
+}
+
+.project-links {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 30px;
+  animation: slideUp 0.6s ease-out 0.3s backwards;
+  flex-wrap: wrap;
+}
+
+.project-link {
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: 2px solid white;
+  border-radius: 25px;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s;
+  backdrop-filter: blur(10px);
+}
+
+.project-link:hover {
+  background: white;
+  color: #667eea;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.slide-type-intro .story-title {
+  font-size: 4.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.slide-type-countdown .story-title {
+  font-size: 5rem;
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+}
+
+.slide-type-project .story-subtitle {
+  font-size: 1.5rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.5;
+}
+
+.slide-type-stats .story-title,
+.slide-type-hours .story-title,
+.slide-type-coins .story-title,
+.slide-type-level .story-title {
+  font-size: 5.5rem;
+}
+
+.slide-type-outro .story-title {
+  font-size: 4.5rem;
+}
+
 .back-btn {
   margin-top: 30px;
   padding: 12px 28px;
@@ -458,11 +542,39 @@ onUnmounted(() => {
   }
 
   .story-title {
-    font-size: 3rem;
+    font-size: 2.5rem;
   }
 
   .story-subtitle {
-    font-size: 1.4rem;
+    font-size: 1.2rem;
+  }
+
+  .story-detail {
+    font-size: 1rem;
+  }
+
+  .slide-type-intro .story-title,
+  .slide-type-countdown .story-title,
+  .slide-type-stats .story-title,
+  .slide-type-hours .story-title,
+  .slide-type-coins .story-title,
+  .slide-type-level .story-title,
+  .slide-type-outro .story-title {
+    font-size: 3rem;
+  }
+
+  .project-links {
+    flex-direction: column;
+    padding: 0 20px;
+  }
+
+  .project-link {
+    width: 100%;
+    max-width: 250px;
+  }
+
+  .story-content {
+    padding: 20px;
   }
 }
 </style>

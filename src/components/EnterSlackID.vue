@@ -67,9 +67,6 @@ const validateAndSubmit = async () => {
               :disabled="isLoading" type="text">
           </div>
         </fieldset>
-        <!--
-         <input v-model="slackId" type="text" placeholder="e.g., U0788PG14F5" class="slack-input" :disabled="isLoading"
-            @keydown="handleKeydown" />-->
         <a class="submit-button" @click="validateAndSubmit" :disabled="isLoading">{{ isLoading ? 'Loading...' : `Get
           your Wrapped` }}</a>
         <div v-if="error" class="error-message">
