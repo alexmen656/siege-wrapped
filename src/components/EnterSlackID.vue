@@ -81,6 +81,15 @@ const handleKeydown = (e: KeyboardEvent) => {
         </div>
       </div>
       <div class="footer">
+        <!--test-->
+        <fieldset class="fieldset">
+          <legend class="fieldset-legend">Project Name</legend>
+          <div class="underline-field">
+            <input placeholder="Frobnicator" required="required" class="text-input validator" type="text"
+              value="Reelmia" name="project[name]" id="project_name">
+          </div>
+        </fieldset>
+        <h3>Important!!! This is not a official Siege site</h3>
         <p>Made with ❤️ for Siege</p>
       </div>
     </div>
@@ -91,7 +100,7 @@ const handleKeydown = (e: KeyboardEvent) => {
 .start-screen {
   width: 100vw;
   height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #f5f5f4 url('https://siege.hackclub.com/assets/parchment-texture-e4dc566e.jpg') repeat;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -107,7 +116,8 @@ const handleKeydown = (e: KeyboardEvent) => {
   flex-direction: column;
   gap: 60px;
   text-align: center;
-  color: white;
+  color: rgba(64, 43, 32, 0.75);
+  ;
 }
 
 .logo-section {
@@ -297,4 +307,98 @@ const handleKeydown = (e: KeyboardEvent) => {
     font-size: 1rem;
   }
 }
+
+.underline-field::after {
+  bottom: 15%;
+  height: clamp(28px, 3vw, 52px);
+}
+
+.underline-field::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 25%;
+  height: clamp(18px, 2.8vw, 36px);
+  background-image: url("https://siege.hackclub.com/assets/underline-long-ce0d7881.webp");
+  background-repeat: no-repeat;
+  background-position: left bottom;
+  background-size: 100% 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.underline-field {
+  margin-bottom: .8rem;
+}
+
+.underline-field {
+  position: relative;
+  display: block;
+  padding-bottom: clamp(22px, 3.2vw, 44px);
+  margin-bottom: 0.5rem;
+  overflow: visible;
+}
+
+.fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+}
+
+fieldset {
+  display: block;
+  min-inline-size: min-content;
+  margin-inline: 2px;
+  border-width: 2px;
+  border-style: groove;
+  border-color: threedface;
+  border-image: initial;
+  padding-block: 0.35em 0.625em;
+  padding-inline: 0.75em;
+}
+
+.fieldset-legend {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.fieldset-legend {
+  font-size: 0.875rem;
+  margin-bottom: 0.375rem;
+}
+
+legend {
+  display: block;
+  unicode-bidi: isolate;
+  padding-inline: 2px;
+}
+
+
+.text-input,
+.textarea-input,
+.select-input {
+  width: 100%;
+  font-size: 1.125rem;
+  padding: 0.5rem 0.125rem;
+  border: none;
+  border-radius: 0;
+  background-color: transparent;
+  position: relative;
+  z-index: 1;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+/*input[type="text" i] {
+  padding-block: 1px;
+  padding-inline: 2px;
+}
+
+.input {
+  position: relative;
+  text-align: center;
+}/*/
 </style>
