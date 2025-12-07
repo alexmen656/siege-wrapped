@@ -2,11 +2,17 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import EnterSlackID from './components/EnterSlackID.vue'
 
+interface Project {
+  name: string
+  coin_value: string
+}
+
 interface UserData {
   username: string
   created_at: string
   total_hours: number
   level: number
+  projects?: Project[]
 }
 
 const userData = ref<UserData | null>(null)
@@ -22,6 +28,82 @@ const stories = computed(() => {
   if (!userData.value) return []
 
   return [
+    /*
+    coin_value
+: 
+"49.0"
+created_at
+: 
+"2025-11-15T20:24:47.569-05:00"
+demo_url
+: 
+"https://github.com/alexmen656/better-stocard/releases/tag/v1.0.0"
+description
+: 
+"Pocketz is a simple card manager that transforms your physical cards into digital ones. Additionally, it supports Apple Wallet so you can have all your cards in one place"
+hours
+: 
+10.1
+id
+: 
+1911
+is_update
+: 
+false
+name
+: 
+"Pocketz"
+repo_url
+: 
+"https://github.com/alexmen656/better-stocard/"
+status
+: 
+"finished"
+updated_at
+: 
+"2025-11-26T23:20:56.533-05:00"
+user
+: 
+{id: 75, name: "Alex P.", display_name: "Alex"}
+week_badge_text
+: 
+"Week 11"
+
+*/
+
+    {
+      title: 'Here are your top projects!',
+      subtitle: (() => {
+        const topProjects = (userData.value?.projects || [])
+          .sort((a, b) => parseFloat(b.coin_value) - parseFloat(a.coin_value))
+          .slice(0, 3)
+
+        return topProjects
+          .map((p, i) => `${i + 1}. ${p.name} (${p.coin_value})<br/>`)
+          .join('\n')
+      })(),
+      gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+    },
+    {
+      title: 'But let\'s get through them 1 by 1!',
+      gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+    },
+    {
+      title: (() => {
+        const topProject = (userData.value?.projects || [])
+          .sort((a, b) => parseFloat(b.coin_value) - parseFloat(a.coin_value))[0]
+
+        return `${topProject.name}`//(${topProject.coin_value})
+      })(),
+      subtitle: (() => {
+        const topProject = (userData.value?.projects || [])
+          .sort((a, b) => parseFloat(b.coin_value) - parseFloat(a.coin_value))[0]
+
+        //return `<img src="${topProject.}" alt="Project Screenshot"/><br/><p>${topProject.description}</p>`
+        return `${topProject.description}`
+      })(),
+      gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+    },
     {
       title: 'Siege Wrapped',
       subtitle: `Siege is over in ${countdownTime.value}`,
@@ -163,7 +245,7 @@ onUnmounted(() => {
       <div class="story-card" :style="{ background: stories[currentStory]?.gradient }">
         <div class="story-content">
           <h1 class="story-title" :key="currentStory">{{ stories[currentStory]?.title }}</h1>
-          <p class="story-subtitle" :key="currentStory + '-sub'">{{ stories[currentStory]?.subtitle }}</p>
+          <p class="story-subtitle" :key="currentStory + '-sub'" v-html="stories[currentStory]?.subtitle"></p>
         </div>
         <div class="nav-area nav-left" @click="prevStory"></div>
         <div class="nav-area nav-right" @click="nextStory"></div>
