@@ -1,10 +1,20 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import EnterSlackID from './components/EnterSlackID.vue'
 
-const userData = ref(null)
+interface UserData {
+  username: string
+  created_at: string
+  total_hours: number
+  level: number
+}
+
+const userData = ref<UserData | null>(null)
 const currentStory = ref(0)
 const isLoading = ref(true)
 const error = ref(null)
+const slackId = ref<string | null>(null)
+const hasStarted = ref(false)
 
 const stories = computed(() => {
   if (!userData.value) return []
@@ -55,33 +65,49 @@ const handleKeydown = (e: KeyboardEvent) => {
   if (e.key === 'ArrowLeft') prevStory()
 }
 
-onMounted(() => {
-  window.addEventListener('keydown', handleKeydown)
+const handleSlackIdSubmit = (id: string) => {
+  slackId.value = id
+  hasStarted.value = true
+  isLoading.value = true
+  error.value = null
+  fetchUserData(id)
+}
 
-  fetch("http://localhost:3031/api/siege/user/U0877PG14F4", {
-    "method": "GET",
-    "headers": {
-      "accept": "application/json",
+const fetchUserData = (id: string) => {
+  fetch(`http://localhost:3031/api/siege/user/${id}`, {
+    method: 'GET',
+    headers: {
+      accept: 'application/json'
     }
-  }).then(res => {
-    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-    return res.json();
   })
+    .then(res => {
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`)
+      return res.json()
+    })
     .then(data => {
-      userData.value = data;
-      isLoading.value = false;
+      userData.value = data
+      isLoading.value = false
     })
     .catch(err => {
-      console.error("Error fetching user data:", err)
+      console.error('Error fetching user data:', err)
       error.value = err.message
       isLoading.value = false
     })
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeydown)
 })
 </script>
 
 <template>
   <div class="wrapped-container">
-    <div v-if="isLoading" class="story-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
+    <EnterSlackID v-if="!hasStarted" @submit="handleSlackIdSubmit" />
+    <div v-else-if="isLoading" class="story-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
       <div class="story-content">
         <div class="loading-spinner"></div>
         <h1 class="story-title">Loading your Stats...</h1>
@@ -91,6 +117,7 @@ onMounted(() => {
       <div class="story-content">
         <h1 class="story-title">Oops!</h1>
         <p class="story-subtitle">{{ error }}</p>
+        <button @click="hasStarted = false" class="back-btn">Try Again</button>
       </div>
     </div>
     <div v-else class="stories-wrapper">
@@ -225,6 +252,24 @@ onMounted(() => {
   margin: 20px 0 0;
   opacity: 0.95;
   animation: slideUp 0.6s ease-out 0.1s backwards;
+}
+
+.back-btn {
+  margin-top: 30px;
+  padding: 12px 28px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: 2px solid white;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.back-btn:hover {
+  background: white;
+  color: #f093fb;
 }
 
 @keyframes slideUp {
