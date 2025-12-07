@@ -22,19 +22,6 @@ interface UserData {
 }
 
 const userData = ref<UserData | null>(null)
-//if (userData.value) userData.value.total_hours = 0;
-
-//debug
-//console.log("User data before calculating hours:", userData.value); // = nul
-
-//userData.value?.projects?.forEach(p => {
-//debug
-//console.log("Adding hours for project:", p.name, "Hours:", p.hours);
-//if (!p.hours) p.hours = 0
-//if (userData.value) userData.value.total_hours += p.hours
-//})
-
-
 const currentStory = ref(0)
 const isLoading = ref(true)
 const error = ref(null)
@@ -121,7 +108,7 @@ const stories = computed<StorySlide[]>(() => {
 
   const slides: StorySlide[] = [
     {
-      title: '⚔️ Siege Wrapped',// 2025
+      title: '⚔️ Siege Wrapped',
       subtitle: `Your journey at Siege`,
       gradient: '',
       type: 'intro'
@@ -293,12 +280,7 @@ const fetchUserData = (id: string) => {
 
       if (userData.value) userData.value.total_hours = 0;
 
-      //debug
-      console.log("User data before calculating hours:", userData.value); // = nul
-
       userData.value?.projects?.forEach(p => {
-        //debug
-        console.log("Adding hours for project:", p.name, "Hours:", p.hours);
         if (!p.hours) p.hours = 0
         if (userData.value) userData.value.total_hours += p.hours
       })
