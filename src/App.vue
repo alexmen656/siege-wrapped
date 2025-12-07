@@ -22,6 +22,19 @@ interface UserData {
 }
 
 const userData = ref<UserData | null>(null)
+//if (userData.value) userData.value.total_hours = 0;
+
+//debug
+//console.log("User data before calculating hours:", userData.value); // = nul
+
+//userData.value?.projects?.forEach(p => {
+//debug
+//console.log("Adding hours for project:", p.name, "Hours:", p.hours);
+//if (!p.hours) p.hours = 0
+//if (userData.value) userData.value.total_hours += p.hours
+//})
+
+
 const currentStory = ref(0)
 const isLoading = ref(true)
 const error = ref(null)
@@ -35,6 +48,7 @@ const displayedHours = ref(0)
 const displayedCoins = ref(0)
 const displayedLevel = ref(0)
 const displayedProjects = ref(0)
+let autoAdvanceTimer: ReturnType<typeof setTimeout> | null = null
 
 const animateNumber = (target: number, current: number, setter: (val: number) => void, duration: number = 1500) => {
   const start = current
@@ -107,7 +121,7 @@ const stories = computed<StorySlide[]>(() => {
 
   const slides: StorySlide[] = [
     {
-      title: '⚔️ Siege Wrapped 2025',
+      title: '⚔️ Siege Wrapped',// 2025
       subtitle: `Your journey at Siege`,
       gradient: '',
       type: 'intro'
@@ -128,8 +142,8 @@ const stories = computed<StorySlide[]>(() => {
       type: 'user'
     },
     {
-      title: '📊 Your Stats',
-      subtitle: `${totalProjects} project${totalProjects !== 1 ? 's' : ''} • ${Math.round(userData.value.total_hours)}h total • Level ${userData.value.level}`,
+      title: 'Your Stats',
+      subtitle: `${totalProjects} project${totalProjects !== 1 ? 's' : ''} • ${Math.round(userData.value.total_hours)}h total`,
       detail: `${Math.round(totalCoins)} coins earned`,
       gradient: '',
       type: 'stats',
@@ -141,14 +155,6 @@ const stories = computed<StorySlide[]>(() => {
       detail: `That's ${Math.round(avgHoursPerProject)}h per project on average`,
       gradient: '',
       type: 'hours',
-      animatedNumber: true
-    },
-    {
-      title: `🎖️ Level ${userData.value.level}`,
-      subtitle: 'Your current level',
-      detail: 'Keep building to level up!',
-      gradient: '',
-      type: 'level',
       animatedNumber: true
     },
     {
@@ -185,7 +191,7 @@ const stories = computed<StorySlide[]>(() => {
     {
       title: '⚔️ Thank You!',
       subtitle: 'Keep building amazing things',
-      detail: 'See you in the next YSWS',
+      detail: 'See you in another YSWS',
       gradient: '',
       type: 'outro'
     }
@@ -197,19 +203,37 @@ const stories = computed<StorySlide[]>(() => {
 const nextStory = () => {
   if (currentStory.value < stories.value.length - 1) {
     currentStory.value++
+    resetAutoAdvanceTimer()
   }
 }
 
 const prevStory = () => {
   if (currentStory.value > 0) {
     currentStory.value--
+    resetAutoAdvanceTimer()
   }
 }
 
+const resetAutoAdvanceTimer = () => {
+  if (autoAdvanceTimer) {
+    clearTimeout(autoAdvanceTimer)
+  }
+  autoAdvanceTimer = setTimeout(() => {
+    if (currentStory.value < stories.value.length - 1) {
+      currentStory.value++
+      resetAutoAdvanceTimer()
+    }
+  }, 5000)
+}
+
 const handleKeydown = (e: KeyboardEvent) => {
-  if (e.key === 'ArrowRight') nextStory()
+  if (e.key === 'ArrowRight' || e.key === 'Enter' || e.key === ' ') nextStory()
   if (e.key === 'ArrowLeft') prevStory()
 }
+
+watch(currentStory, () => {
+  resetAutoAdvanceTimer()
+})
 
 const startCountdown = () => {
   const endTime = new Date('2025-12-08T00:00:00-05:00');
@@ -266,6 +290,19 @@ const fetchUserData = (id: string) => {
     })
     .then(data => {
       userData.value = data
+
+      if (userData.value) userData.value.total_hours = 0;
+
+      //debug
+      console.log("User data before calculating hours:", userData.value); // = nul
+
+      userData.value?.projects?.forEach(p => {
+        //debug
+        console.log("Adding hours for project:", p.name, "Hours:", p.hours);
+        if (!p.hours) p.hours = 0
+        if (userData.value) userData.value.total_hours += p.hours
+      })
+
       isLoading.value = false
     })
     .catch(err => {
@@ -282,6 +319,7 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown)
   if (countdownInterval) clearInterval(countdownInterval)
+  if (autoAdvanceTimer) clearTimeout(autoAdvanceTimer)
   if (audioRef.value) {
     audioRef.value.pause()
     audioRef.value = null
@@ -324,8 +362,7 @@ onUnmounted(() => {
           </h1>
           <p class="story-subtitle" :key="currentStory + '-sub'">
             <span v-if="stories[currentStory]?.type === 'stats'">
-              {{ displayedProjects }} project{{ displayedProjects !== 1 ? 's' : '' }} • {{ displayedHours }}h total •
-              Level {{ displayedLevel }}
+              {{ displayedProjects }} project{{ displayedProjects !== 1 ? 's' : '' }} • {{ displayedHours }}h total
             </span>
             <span v-else v-html="stories[currentStory]?.subtitle"></span>
           </p>
@@ -334,11 +371,11 @@ onUnmounted(() => {
           </p>
           <div v-if="stories[currentStory]?.projectData?.demo_url" class="project-links">
             <a :href="stories[currentStory]?.projectData?.demo_url" target="_blank" class="project-link">
-              🔗 View Demo
+              View Demo
             </a>
             <a v-if="stories[currentStory]?.projectData?.repo_url" :href="stories[currentStory]?.projectData?.repo_url"
               target="_blank" class="project-link">
-              💻 Repository
+              Repository
             </a>
           </div>
         </div>
