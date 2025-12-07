@@ -49,12 +49,6 @@ const validateAndSubmit = async () => {
     isLoading.value = false
   }
 }
-
-const handleKeydown = (e: KeyboardEvent) => {
-  if (e.key === 'Enter') {
-    validateAndSubmit()
-  }
-}
 </script>
 
 <template>
@@ -69,10 +63,13 @@ const handleKeydown = (e: KeyboardEvent) => {
         <fieldset class="fieldset">
           <legend class="fieldset-legend">Project Name</legend>
           <div class="underline-field">
-            <input placeholder="Frobnicator" required="required" class="text-input validator" type="text" value=""
-              name="slack[id]" id="slack_id">
+            <input v-model="slackId" placeholder="e.g., U0788PG14F5" required="required" class="text-input validator"
+              :disabled="isLoading" type="text">
           </div>
         </fieldset>
+        <!--
+         <input v-model="slackId" type="text" placeholder="e.g., U0788PG14F5" class="slack-input" :disabled="isLoading"
+            @keydown="handleKeydown" />-->
         <a class="submit-button" @click="validateAndSubmit" :disabled="isLoading">{{ isLoading ? 'Loading...' : `Get
           your Wrapped` }}</a>
         <div v-if="error" class="error-message">
