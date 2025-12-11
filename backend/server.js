@@ -1,10 +1,10 @@
 import express from 'express';
-import cors from 'cors';
+//import cors from 'cors';
 import fetch from 'node-fetch';
 
 const app = express();
 
-app.use(cors());
+//app.use(cors());
 app.use(express.json());
 
 app.get('/api/siege/user/:userId', async (req, res) => {
