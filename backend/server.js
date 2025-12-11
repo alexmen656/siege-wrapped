@@ -23,7 +23,15 @@ app.get('/api/siege/user/:userId', async (req, res) => {
             }
         );
 
+        if (!response.ok) {
+            return res.status(response.status).json({ error: `API returned ${response.status}` });
+        }
+
         const data = await response.json();
+
+        if (!data.projects || !Array.isArray(data.projects)) {
+            return res.json(data);
+        }
 
         const projectFetches = data.projects.map(async (project) => {
             const r = await fetch(`https://siege.hackclub.com/api/public-beta/project/${project.id}`, {
@@ -38,8 +46,6 @@ app.get('/api/siege/user/:userId', async (req, res) => {
             }
 
             const projectData = await r.json();
-            // return projectData;
-            //return { ...project, details: projectData };
             return { ...projectData };
         });
 
