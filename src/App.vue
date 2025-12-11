@@ -14,7 +14,7 @@ interface Project {
 }
 
 interface UserData {
-  username: string
+  display_name: string
   created_at: string
   total_hours: number
   level: number
@@ -139,7 +139,7 @@ const stories = computed<StorySlide[]>(() => {
       type: 'countdown'
     },
     {
-      title: userData.value.username || 'Maker',
+      title: userData.value.display_name || 'Maker',
       subtitle: yearsSince > 0
         ? `Member since ${new Date(userData.value.created_at).getFullYear()} • ${yearsSince > 1 ? `${yearsSince} years` : '1 year'} of building`
         : `Joined ${new Date(userData.value.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`,
