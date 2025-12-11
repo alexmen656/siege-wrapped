@@ -1,6 +1,6 @@
 # Siege Wrapped is here!
 
-Siege is over and now you can create your own Siege Wrapped. This project was inspired by SoM Wrapped and Spotify Wrapped.
+Siege Wrapped. You can probably already imagine what it is, basically Spotify Wrapped for Siege. Just enter your Slack ID and get your personal wrapped. Inspired by SoM Wrapped and Spotify Wrapped.
 
 ## Recommended IDE Setup
 
