@@ -25,7 +25,7 @@ const validateAndSubmit = async () => {
   isLoading.value = true
 
   try {
-    const response = await fetch(`http://localhost:3031/api/siege/user/${slackId.value}`, {
+    const response = await fetch(`http://siege-wrapped-backend.vercel.app/api/siege/user/${slackId.value}`, {
       method: 'GET',
       headers: {
         accept: 'application/json'

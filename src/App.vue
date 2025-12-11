@@ -296,7 +296,7 @@ const handleSlackIdSubmit = (id: string) => {
 
 const fetchUserData = (id: string) => {
   startCountdown()
-  fetch(`http://localhost:3031/api/siege/user/${id}`, {
+  fetch(`http://siege-wrapped-backend.vercel.app/api/siege/user/${id}`, {
     method: 'GET',
     headers: {
       accept: 'application/json'
@@ -308,7 +308,6 @@ const fetchUserData = (id: string) => {
     })
     .then(data => {
       userData.value = data
-      // Ensure slack_id is stored for leaderboard matching
       if (userData.value && !userData.value.slack_id && data.slack_id) {
         userData.value.slack_id = data.slack_id
       }
@@ -320,7 +319,7 @@ const fetchUserData = (id: string) => {
         if (userData.value) userData.value.total_hours += p.hours
       })
 
-      fetch(`http://localhost:3031/api/siege/leaderboard/`, {
+      fetch(`http://siege-wrapped-backend.vercel.app/api/siege/leaderboard/`, {
         method: 'GET',
         headers: {
           accept: 'application/json'
@@ -331,7 +330,6 @@ const fetchUserData = (id: string) => {
           return res.json()
         })
         .then(data => {
-          // Handle both array and object with leaderboard property
           const leaderboardArray = Array.isArray(data) ? data : (data.leaderboard || [])
           leaderboardData.value = leaderboardArray
           isLoading.value = false
