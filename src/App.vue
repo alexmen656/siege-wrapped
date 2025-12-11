@@ -296,7 +296,7 @@ const handleSlackIdSubmit = (id: string) => {
 
 const fetchUserData = (id: string) => {
   startCountdown()
-  fetch(`http://siege-wrapped-backend.vercel.app/api/siege/user/${id}`, {
+  fetch(`https://siege-wrapped-backend.vercel.app/api/siege/user/${id}`, {
     method: 'GET',
     headers: {
       accept: 'application/json'
@@ -319,7 +319,7 @@ const fetchUserData = (id: string) => {
         if (userData.value) userData.value.total_hours += p.hours
       })
 
-      fetch(`http://siege-wrapped-backend.vercel.app/api/siege/leaderboard/`, {
+      fetch(`https://siege-wrapped-backend.vercel.app/api/siege/leaderboard/`, {
         method: 'GET',
         headers: {
           accept: 'application/json'
