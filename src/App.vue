@@ -19,9 +19,20 @@ interface UserData {
   total_hours: number
   level: number
   projects?: Project[]
+  slack_id?: string
+}
+
+interface LeaderboardEntry {
+  id: number
+  slack_id: string
+  name: string
+  display_name: string
+  coins: number
+  rank: string
 }
 
 const userData = ref<UserData | null>(null)
+const leaderboardData = ref<LeaderboardEntry[]>([])
 const currentStory = ref(0)
 const isLoading = ref(true)
 const error = ref(null)
@@ -106,6 +117,13 @@ const stories = computed<StorySlide[]>(() => {
   const avgHoursPerProject = userData.value.total_hours / Math.max(totalProjects, 1)
   const yearsSince = new Date().getFullYear() - new Date(userData.value.created_at).getFullYear()
 
+  // Find user position on leaderboard
+  const userLeaderboardPosition = leaderboardData.value.findIndex(
+    entry => entry.slack_id === userData.value?.slack_id
+  )
+  const isOnLeaderboard = userLeaderboardPosition !== -1
+  const leaderboardRank = userLeaderboardPosition + 1
+
   const slides: StorySlide[] = [
     {
       title: '⚔️ Siege Wrapped',
@@ -174,15 +192,28 @@ const stories = computed<StorySlide[]>(() => {
       gradient: '',
       type: 'coins',
       animatedNumber: true
-    },
-    {
-      title: '⚔️ Thank You!',
-      subtitle: 'Keep building amazing things',
-      detail: 'See you in another YSWS',
-      gradient: '',
-      type: 'outro'
     }
   )
+
+  if (isOnLeaderboard) {
+    const rankEmojis = ['🥇', '🥈', '🥉']
+    const emoji = leaderboardRank <= 3 ? rankEmojis[leaderboardRank - 1] : '⭐'
+
+    slides.push({
+      title: `${emoji} #${leaderboardRank}`,
+      subtitle: 'Your rank on the leaderboard',
+      gradient: '',
+      type: 'leaderboard'
+    })
+  }
+
+  slides.push({
+    title: '⚔️ Thank You!',
+    subtitle: 'Keep building amazing things',
+    detail: 'See you in another YSWS',
+    gradient: '',
+    type: 'outro'
+  })
 
   return slides
 })
@@ -277,6 +308,10 @@ const fetchUserData = (id: string) => {
     })
     .then(data => {
       userData.value = data
+      // Ensure slack_id is stored for leaderboard matching
+      if (userData.value && !userData.value.slack_id && data.slack_id) {
+        userData.value.slack_id = data.slack_id
+      }
 
       if (userData.value) userData.value.total_hours = 0;
 
@@ -284,6 +319,27 @@ const fetchUserData = (id: string) => {
         if (!p.hours) p.hours = 0
         if (userData.value) userData.value.total_hours += p.hours
       })
+
+      fetch(`http://localhost:3031/api/siege/leaderboard/`, {
+        method: 'GET',
+        headers: {
+          accept: 'application/json'
+        }
+      })
+        .then(res => {
+          if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`)
+          return res.json()
+        })
+        .then(data => {
+          // Handle both array and object with leaderboard property
+          const leaderboardArray = Array.isArray(data) ? data : (data.leaderboard || [])
+          leaderboardData.value = leaderboardArray
+          isLoading.value = false
+        }).catch(err => {
+          console.error('Error fetching user data:', err)
+          error.value = err.message
+          isLoading.value = false
+        })
 
       isLoading.value = false
     })
